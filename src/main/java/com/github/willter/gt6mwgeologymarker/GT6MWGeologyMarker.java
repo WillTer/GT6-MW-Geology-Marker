@@ -19,9 +19,7 @@ package com.github.willter.gt6mwgeologymarker;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.*;
 import gregapi.network.NetworkHandler;
-
-import java.util.ArrayList;
-import java.util.List;
+import mapwriter.Mw;
 
 import com.github.willter.gt6mwgeologymarker.lib.*;
 import com.github.willter.gt6mwgeologymarker.network.*;
@@ -49,11 +47,7 @@ public final class GT6MWGeologyMarker extends gregapi.api.Abstract_Mod {
 	 * public static GT6MWGeologyMarker instance;
 	 */
 
-	public static String hostName = "GT6MWGeologyMarker";
-	public static boolean doGui = false;
-	public static int xMarker, yMarker, zMarker;
-	public static List<GeoTag> rockSurvey = new ArrayList<>();
-	public static List<GeoTag> bedrockFault = new ArrayList<>();
+	public static mapwriter.Mw mapWriterInstance = null;
 
 	@Override
 	public String getModID() {
@@ -123,7 +117,6 @@ public final class GT6MWGeologyMarker extends gregapi.api.Abstract_Mod {
 				new PacketOreSurvey(4), new PacketOreSurvey(5), new PacketOreSurvey(6), new PacketOreSurvey(7));
 
 		net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new RightClickEvent());
-		cpw.mods.fml.common.FMLCommonHandler.instance().bus().register(new ClientConnectionEvent());
 		getProxy().registerKeybindings();
 	}
 
@@ -135,6 +128,10 @@ public final class GT6MWGeologyMarker extends gregapi.api.Abstract_Mod {
 	@Override
 	public void onModPostInit2(FMLPostInitializationEvent aEvent) {
 		// Insert your PostInit Code here and not above
+		mapWriterInstance = Mw.instance;
+		if (Mw.instance == null) {
+			System.out.println(GT6MWGeologyMarker.MOD_ID + ": Could not get instance of MapWriter!");
+		}
 		getProxy().registerPointer();
 	}
 

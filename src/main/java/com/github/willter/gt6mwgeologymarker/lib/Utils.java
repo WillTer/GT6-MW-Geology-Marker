@@ -1,16 +1,8 @@
 package com.github.willter.gt6mwgeologymarker.lib;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-
 import com.github.willter.gt6mwgeologymarker.ConfigHandler;
 import com.github.willter.gt6mwgeologymarker.GT6MWGeologyMarker;
 import com.github.willter.gt6mwgeologymarker.network.ChatPacket;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 import mapwriter.Mw;
 import mapwriter.map.MarkerManager;
@@ -19,43 +11,17 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.StatCollector;
 
 public class Utils {
-
 	public static gregapi.network.INetworkHandler NW_PJ;
 
-	public final static String GT_FILE = "GT6OreVeins.json",
-			GT_BED_FILE = "GT6BedrockSpots.json";
-	public final static byte STONE_LAYER = 0, FLOWER_ORE_MARKER = 1, ORE_VEIN = 2, BEDROCK_ORE_VEIN = 3;
+	public final static byte STONE_LAYER = 0;
+	public final static byte FLOWER_ORE_MARKER = 1;
+	public final static byte ORE_VEIN = 2;
+	public final static byte BEDROCK_ORE_VEIN = 3;
 
-	public final static java.util.regex.Pattern patternInvalidChars = java.util.regex.Pattern.compile("[^a-zA-Z0-9_ ]");
-
-	public static String invalidChars(String s) {
-		return patternInvalidChars.matcher(s).replaceAll("_");
-	}
-
-	public static void writeJson(String name) {
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		String json = null;
-		switch (name) {
-			case GT_FILE:
-				json = gson.toJson(GT6MWGeologyMarker.rockSurvey);
-				break;
-			case GT_BED_FILE:
-				json = gson.toJson(GT6MWGeologyMarker.bedrockFault);
-				break;
-		}
-
-		if (json == null)
-			throw new java.lang.IllegalArgumentException(
-					GT6MWGeologyMarker.MOD_ID + ": " + name + " is not a recognized data file.");
-		try {
-			Utils.debugLog("Attempting to write to " + GT6MWGeologyMarker.hostName + "/" + name);
-			FileWriter fw = new FileWriter(GT6MWGeologyMarker.hostName + "/" + name);
-			fw.write(json);
-			fw.close();
-		} catch (IOException e) {
-			System.out.println(GT6MWGeologyMarker.MOD_ID + ": Could not write to " + name + "!");
-		}
-	}
+	// TODO: Config?..
+	public final static String OreVeinGroup = "Ore Veins";
+	public final static String BedrockVeinGroup = "Bedrock Ore Veins";
+	public final static String StoneLayerGroup = "Stone Layers";
 
 	public static void createMapMarker(int x, int y, int z, int dimension, String oreName, String markerGroup,
 			final EntityPlayer aPlayer) {
@@ -65,30 +31,12 @@ public class Utils {
 		}
 
 		MarkerManager markerManager = Mw.instance.markerManager;
-		markerManager.addMarker(oreName, markerGroup, x, y, z, dimension, 0xffff0000);
-		markerManager.setVisibleGroupName(markerGroup);
-		markerManager.update();
+		if (markerManager != null) {
+			markerManager.addMarker(oreName, markerGroup, x, y, z, dimension, 0xffff0000);
+			markerManager.setVisibleGroupName(markerGroup);
+			markerManager.update();
 
-		Utils.printMessageToChat(aPlayer, ChatString.MARKED, oreName);
-	}
-
-	public static void readJson(String name) {
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(GT6MWGeologyMarker.hostName + "/" + name));
-			Gson gson = new Gson();
-			switch (name) {
-				case GT_FILE:
-					GT6MWGeologyMarker.rockSurvey = gson.fromJson(br, new TypeToken<java.util.List<GeoTag>>() {
-					}.getType());
-					break;
-				case GT_BED_FILE:
-					GT6MWGeologyMarker.bedrockFault = gson.fromJson(br, new TypeToken<java.util.List<GeoTag>>() {
-					}.getType());
-					break;
-			}
-			br.close();
-		} catch (IOException e) {
-			System.out.println(GT6MWGeologyMarker.MOD_ID + ": No " + name + " file found.");
+			Utils.printMessageToChat(aPlayer, ChatString.MARKED, oreName);
 		}
 	}
 
@@ -106,6 +54,10 @@ public class Utils {
 		if (ConfigHandler.debug) {
 			System.out.println(GT6MWGeologyMarker.MOD_NAME + ": " + message);
 		}
+	}
+
+	public static boolean IsInNChunksFrom(int n, int chunkX, int chunkZ, int fromChunkX, int fromChunkZ) {
+		return Math.abs(chunkX - fromChunkX) <= n && Math.abs(chunkZ - fromChunkZ) <= n;
 	}
 
 	public static enum ChatString {

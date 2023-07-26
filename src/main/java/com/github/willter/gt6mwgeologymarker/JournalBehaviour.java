@@ -1,6 +1,7 @@
 package com.github.willter.gt6mwgeologymarker;
 
-import com.github.willter.gt6mwgeologymarker.lib.GeoTag;
+import java.util.ListIterator;
+
 import com.github.willter.gt6mwgeologymarker.lib.Utils;
 import com.github.willter.gt6mwgeologymarker.network.PacketOreSurvey;
 
@@ -8,6 +9,7 @@ import gregapi.block.metatype.BlockStones;
 import gregapi.item.multiitem.MultiItem;
 import gregapi.oredict.OreDictMaterial;
 import gregapi.tileentity.notick.TileEntityBase03MultiTileEntities;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -200,116 +202,119 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 		Utils.debugLog("Sampling " + meta + " at " + x + "," + y + "," + z
 				+ " on world " + dim);
 
-		final String oreName = OreDictMaterial.MATERIAL_ARRAY[meta].mNameLocal;
+		final String oreName = meta == 0 ? "" : OreDictMaterial.MATERIAL_ARRAY[meta].mNameLocal;
 		if (sourceType == Utils.STONE_LAYER) {
 			for (String stoneName : ConfigHandler.stoneBlacklist) {
-				if (stoneName == oreName) {
+				if (stoneName.equals(oreName)) {
 					Utils.debugLog("Blacklisted stone found: " + oreName);
 					return; // blacklisted
 				}
 			}
 		}
 
+		if (GT6MWGeologyMarker.mapWriterInstance == null) {
+			return;
+		}
+
+		mapwriter.map.MarkerManager markerManager = GT6MWGeologyMarker.mapWriterInstance.markerManager;
+
 		final int chunkX = x / 16;
 		final int chunkZ = z / 16;
 		if (sourceType == Utils.FLOWER_ORE_MARKER || sourceType == Utils.BEDROCK_ORE_VEIN) {
 			boolean match = false;
-			if (GT6MWGeologyMarker.bedrockFault.size() != 0) {
-				for (GeoTag tag : GT6MWGeologyMarker.bedrockFault) {
-					if (dim == tag.dim && meta == tag.ore) {
-						// include adjacent chunks as same unit.
-						// generates a 32 pattern of indicators, and a 6 spread of ores.
-						if (tag.IsInNChunksFrom(ConfigHandler.veinDistance, chunkX, chunkZ)) {
-							match = true;
-							break;
+			ListIterator<mapwriter.map.Marker> iter = markerManager.markerList
+					.listIterator();
+			while (iter.hasNext()) {
+				final mapwriter.map.Marker marker = iter.next();
+
+				final int markerChunkX = marker.x / 16;
+				final int markerChunkZ = marker.z / 16;
+
+				Utils.debugLog("Check marker (bedrock) {" + marker.name + ", " + markerChunkX + ", " + markerChunkZ
+						+ "}" + " against {"
+						+ oreName + ", " + chunkX + ", " + chunkZ + "}");
+
+				if (dim == marker.dimension && oreName.equals(marker.name)) {
+					// include adjacent chunks as same unit.
+					// generates a 32 pattern of indicators, and a 6 spread of ores.
+					if (Utils.IsInNChunksFrom(ConfigHandler.veinDistance, markerChunkX, markerChunkZ, chunkX,
+							chunkZ)) {
+						match = true;
+						break;
+					}
+				} else if (marker.dimension == dim && marker.groupName.equals(Utils.BedrockVeinGroup)
+						&& marker.name.isEmpty()) {
+					// find a vein under non-specific flowers
+					boolean tSpecify = (sourceType == Utils.BEDROCK_ORE_VEIN);
+					// allow the confusing Sphalerite / Smithsonite flower to be specified by the
+					// raw ore chunk
+					// and the various tungsten ores too
+					for (int i = 0, j = multiFlowers.length; i < j && !tSpecify; i++) {
+						if (marker.name.equals(OreDictMaterial.MATERIAL_ARRAY[multiFlowers[i]].mNameLocal)) {
+							tSpecify = true;
 						}
-					} else if (tag.dim == dim && tag.ore == 0) {
-						// find a vein under non-specific flowers
-						boolean tSpecify = (sourceType == Utils.BEDROCK_ORE_VEIN);
-						// allow the confusing Sphalerite / Smithsonite flower to be specified by the
-						// raw ore chunk
-						// and the various tungsten ores too
-						for (int i = 0, j = multiFlowers.length; i < j && !tSpecify; i++) {
-							if (tag.ore == multiFlowers[i]) {
-								tSpecify = true;
-							}
-						}
-						if (tSpecify && tag.IsInNChunksFrom(ConfigHandler.veinDistance, chunkX, chunkZ)) {
-							GT6MWGeologyMarker.bedrockFault.remove(tag);
-							match = false;
-							continue;
-						}
-					} else if (tag.dim == dim && meta == 0) {
-						if (tag.IsInNChunksFrom(ConfigHandler.veinDistance, chunkX, chunkZ)) {
-							if (!tag.sample) {
+					}
+					if (tSpecify
+							&& Utils.IsInNChunksFrom(ConfigHandler.veinDistance, markerChunkX, markerChunkZ, chunkX,
+									chunkZ)) {
+						iter.remove();
+						match = false;
+						continue;
+					}
+				} else if (marker.dimension == dim && meta == 0) {
+					if (Utils.IsInNChunksFrom(ConfigHandler.veinDistance, markerChunkX, markerChunkZ, chunkX,
+							chunkZ)) {
+						for (int i = 0, j = multiFlowers.length; i < j; i++) {
+							if (marker.name.equals(OreDictMaterial.MATERIAL_ARRAY[multiFlowers[i]].mNameLocal)) {
 								match = true;
 								break;
 							}
-							for (int i = 0, j = multiFlowers.length; i < j; i++) {
-								if (tag.ore == multiFlowers[i]) {
-									match = true;
-									break;
-								}
-							}
 						}
 					}
-					if (match)
-						break;
 				}
+				if (match)
+					break;
 			}
 			if (!match) {
-				// make a new entry
-				GT6MWGeologyMarker.bedrockFault
-						.add(new GeoTag(meta, dim, chunkX, chunkZ,
-								sourceType == Utils.BEDROCK_ORE_VEIN ? false : true));
-				Utils.writeJson(Utils.GT_BED_FILE);
+				Utils.createMapMarker(x, y, z, dim, oreName, Utils.BedrockVeinGroup, aPlayer);
 			}
 		}
 
-		if (meta == 0) {
+		if (oreName.isEmpty()) {
 			return;
 		}
 
 		// ignore non-specific rocks and empty ores
-		if (GT6MWGeologyMarker.rockSurvey.size() != 0) {
-			for (GeoTag rock : GT6MWGeologyMarker.rockSurvey) {
-				if (meta == rock.ore && dim == rock.dim
-						&& rock.IsInNChunksFrom(ConfigHandler.veinDistance, chunkX, chunkZ)) {
-					switch (sourceType) {
-						case Utils.ORE_VEIN:
-							if (!rock.sample) {
-								rock.dead = false;
-								Utils.writeJson(Utils.GT_FILE);
-								return;
-							}
-							break;
-						case Utils.STONE_LAYER: // result of server-side message only
-							if (!rock.sample) {
-								return;
-							}
-							break;
-						default:
-							return;
-					}
-				}
+		ListIterator<mapwriter.map.Marker> iter = markerManager.markerList
+				.listIterator();
+		while (iter.hasNext()) {
+			final mapwriter.map.Marker marker = iter.next();
+
+			final int markerChunkX = marker.x / 16;
+			final int markerChunkZ = marker.z / 16;
+
+			Utils.debugLog("Check marker (bedrock) {" + marker.name + ", " + markerChunkX + ", " + markerChunkZ
+					+ "}" + " against {"
+					+ oreName + ", " + chunkX + ", " + chunkZ + "}");
+
+			if (oreName.equals(marker.name) && dim == marker.dimension
+					&& Utils.IsInNChunksFrom(ConfigHandler.veinDistance, markerChunkX, markerChunkZ, chunkX,
+							chunkZ)) {
+				return;
 			}
 		}
 
 		// Found traces of a new vein
 		switch (sourceType) {
 			case Utils.ORE_VEIN:
-				GT6MWGeologyMarker.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, false));
-				Utils.createMapMarker(x, y, z, dim, oreName, "Ore Veins", aPlayer);
+				Utils.createMapMarker(x, y, z, dim, oreName, Utils.OreVeinGroup, aPlayer);
 				break;
 			case Utils.STONE_LAYER:
-				GT6MWGeologyMarker.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, false));
-				Utils.createMapMarker(x, y, z, dim, oreName, "Stone Layers", aPlayer);
+				Utils.createMapMarker(x, y, z, dim, oreName, Utils.StoneLayerGroup, aPlayer);
 				break;
 			default:
-				GT6MWGeologyMarker.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, true));
-				Utils.createMapMarker(x, y, z, dim, oreName, "Bedrock Ore Veins", aPlayer);
+				Utils.createMapMarker(x, y, z, dim, oreName, Utils.BedrockVeinGroup, aPlayer);
 				break;
 		}
-		Utils.writeJson(Utils.GT_FILE);
 	}
 }
