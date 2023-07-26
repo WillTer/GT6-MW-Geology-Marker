@@ -18,8 +18,6 @@ import net.minecraft.world.World;
 public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior.AbstractBehaviorDefault {
 	public static JournalBehaviour INSTANCE = new JournalBehaviour();
 
-	static final short[] multiFlowers = { 9130, 9211, 9133, 9194, 9217, 9193, 9128, 9195, 9196, 9197 };
-
 	@Override
 	public boolean onItemUse(MultiItem aItem, ItemStack aStack, EntityPlayer aPlayer, World aWorld, int aX, int aY,
 			int aZ, byte aSide, float hitX, float hitY, float hitZ) {
@@ -61,7 +59,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 				TakeSampleServer(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.STONE_LAYER, aPlayer);
 			}
 		} else if (gregapi.data.OP.oreRaw.contains(sample)) {
-			TakeSampleServer(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.FLOWER_ORE_MARKER, aPlayer);
+			TakeSampleServer(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.BEDROCK_ORE_VEIN, aPlayer);
 		} else {
 			TakeSampleServer(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.ORE_VEIN, aPlayer);
 		}
@@ -82,72 +80,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 				TakeSample(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.ORE_VEIN, aPlayer);
 			}
 		} else if (b instanceof gregapi.block.misc.BlockBaseFlower) {
-			short type = 0;
-			final int metadata = aWorld.getBlockMetadata(x, y, z);
-			if (b.getUnlocalizedName().equalsIgnoreCase("gt.block.flower.a")) {
-				// TODO: map or ...?
-				switch (metadata) {
-					case 0: // Gold
-						type = 790;
-						break;
-					case 1: // Galena
-						type = 9117;
-						break;
-					case 2: // Chalcopyrite
-						type = 9111;
-						break;
-					case 3: // Sphalerite & Smithsonite
-						type = 0; // either 9130 or 9211
-						break;
-					case 4: // Pentlandite
-						type = 9145;
-						break;
-					case 5: // Uraninite
-						type = 9134;
-						break;
-					case 6: // Cooperite
-						type = 9116;
-						break;
-					case 8: // any Hexorium
-					case 7: // generic Orechid
-						break;
-					default:
-						Utils.debugLog("Found unregistered ore with block metadata " + metadata);
-						break;
-				}
-			} else if (b.getUnlocalizedName().equalsIgnoreCase("gt.block.flower.b")) {
-				// TODO: map or ...?
-				switch (metadata) {
-					case 0: // Arsenopyrite
-						type = 9216;
-						break;
-					case 1: // Stibnite
-						type = 9131;
-						break;
-					case 2: // Gold
-						type = 790;
-						break;
-					case 3: // Copper
-						type = 290;
-						break;
-					case 4: // Redstone
-						type = 8333;
-						break;
-					case 5: // Pitchblende
-						type = 9155;
-						break;
-					case 6: // Diamonds
-						type = 8300;
-						break;
-					case 7: // any W
-						type = 0; // any of 9133, 9194, 9217, 9193, 9128, 9195, 9196, 9197
-						break;
-					default:
-						Utils.debugLog("Found unregistered ore with block metadata " + metadata);
-						break;
-				}
-			}
-			TakeSample(aWorld, x, y, z, type, Utils.FLOWER_ORE_MARKER, aPlayer);
+			TakeSample(aWorld, x, y, z, (short) 0, Utils.FLOWER_ORE_MARKER, aPlayer);
 		} else if (ConfigHandler.trackStoneRocks && b instanceof BlockStones
 				&& b.getDamageValue(aWorld, x, y, z) == BlockStones.STONE) {
 			TakeSample(aWorld, x, y, z, ((BlockStones) b).mMaterial.mID, Utils.STONE_LAYER, aPlayer);
@@ -202,7 +135,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 		Utils.debugLog("Sampling " + meta + " at " + x + "," + y + "," + z
 				+ " on world " + dim);
 
-		final String oreName = meta == 0 ? "" : OreDictMaterial.MATERIAL_ARRAY[meta].mNameLocal;
+		final String oreName = meta == 0 ? "Unknown Ore" : OreDictMaterial.MATERIAL_ARRAY[meta].mNameLocal;
 		if (sourceType == Utils.STONE_LAYER) {
 			boolean found = false;
 			for (String stoneName : ConfigHandler.stoneBlacklist) {
@@ -222,75 +155,10 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 			return;
 		}
 
-		mapwriter.map.MarkerManager markerManager = GT6MWGeologyMarker.mapWriterInstance.markerManager;
+		final mapwriter.map.MarkerManager markerManager = GT6MWGeologyMarker.mapWriterInstance.markerManager;
 
 		final int chunkX = x / 16;
 		final int chunkZ = z / 16;
-		if (sourceType == Utils.FLOWER_ORE_MARKER || sourceType == Utils.BEDROCK_ORE_VEIN) {
-			boolean match = false;
-			ListIterator<mapwriter.map.Marker> iter = markerManager.markerList
-					.listIterator();
-			while (iter.hasNext()) {
-				final mapwriter.map.Marker marker = iter.next();
-
-				final int markerChunkX = marker.x / 16;
-				final int markerChunkZ = marker.z / 16;
-
-				Utils.debugLog("Check marker (bedrock) {" + marker.name + ", " + markerChunkX + ", " + markerChunkZ
-						+ "}" + " against {"
-						+ oreName + ", " + chunkX + ", " + chunkZ + "}");
-
-				if (dim == marker.dimension && oreName.equals(marker.name)) {
-					// include adjacent chunks as same unit.
-					// generates a 32 pattern of indicators, and a 6 spread of ores.
-					if (Utils.IsInNChunksFrom(ConfigHandler.veinDistance, markerChunkX, markerChunkZ, chunkX,
-							chunkZ)) {
-						match = true;
-						break;
-					}
-				} else if (marker.dimension == dim && marker.groupName.equals(Utils.BedrockVeinGroup)
-						&& marker.name.isEmpty()) {
-					// find a vein under non-specific flowers
-					boolean tSpecify = (sourceType == Utils.BEDROCK_ORE_VEIN);
-					// allow the confusing Sphalerite / Smithsonite flower to be specified by the
-					// raw ore chunk
-					// and the various tungsten ores too
-					for (int i = 0, j = multiFlowers.length; i < j && !tSpecify; i++) {
-						if (marker.name.equals(OreDictMaterial.MATERIAL_ARRAY[multiFlowers[i]].mNameLocal)) {
-							tSpecify = true;
-						}
-					}
-					if (tSpecify
-							&& Utils.IsInNChunksFrom(ConfigHandler.veinDistance, markerChunkX, markerChunkZ, chunkX,
-									chunkZ)) {
-						iter.remove();
-						match = false;
-						continue;
-					}
-				} else if (marker.dimension == dim && meta == 0) {
-					if (Utils.IsInNChunksFrom(ConfigHandler.veinDistance, markerChunkX, markerChunkZ, chunkX,
-							chunkZ)) {
-						for (int i = 0, j = multiFlowers.length; i < j; i++) {
-							if (marker.name.equals(OreDictMaterial.MATERIAL_ARRAY[multiFlowers[i]].mNameLocal)) {
-								match = true;
-								break;
-							}
-						}
-					}
-				}
-				if (match)
-					break;
-			}
-			if (!match) {
-				Utils.createMapMarker(x, y, z, dim, oreName, Utils.BedrockVeinGroup, aPlayer);
-			}
-		}
-
-		if (oreName.isEmpty()) {
-			return;
-		}
-
-		// ignore non-specific rocks and empty ores
 		ListIterator<mapwriter.map.Marker> iter = markerManager.markerList
 				.listIterator();
 		while (iter.hasNext()) {
