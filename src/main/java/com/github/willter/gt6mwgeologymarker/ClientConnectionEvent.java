@@ -1,4 +1,4 @@
-package com.github.canisartorus.prospectorjournal;
+package com.github.willter.gt6mwgeologymarker;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
@@ -9,10 +9,10 @@ import net.minecraft.server.integrated.IntegratedServer;
 import java.io.File;
 import java.net.InetSocketAddress;
 
-import com.github.canisartorus.prospectorjournal.lib.Utils;
+import com.github.willter.gt6mwgeologymarker.lib.Utils;
 
 public class ClientConnectionEvent {
-    public static final String PJ_FOLDER = "ProspectorJournal/";
+    public static final String PJ_FOLDER = "GT6MWGeologyMarker/";
     private boolean CLIENT_JUST_CONNECTED = true;
 
     @SubscribeEvent
@@ -39,7 +39,7 @@ public class ClientConnectionEvent {
             fileJson.mkdirs();
         }
 
-        ProspectorJournal.hostName = hostname;
+        GT6MWGeologyMarker.hostName = hostname;
 
         Utils.readJson(Utils.GT_FILE);
         Utils.readJson(Utils.GT_BED_FILE);
@@ -50,7 +50,7 @@ public class ClientConnectionEvent {
     public void onPlayerTickEventClient(cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent aEvent) {
         if (CLIENT_JUST_CONNECTED && aEvent.phase == Phase.END && aEvent.side.isClient()) {
             CLIENT_JUST_CONNECTED = false;
-            System.out.println(ProspectorJournal.MOD_NAME
+            System.out.println(GT6MWGeologyMarker.MOD_NAME
                     + "!!Warning!! Initializing on Client Player Tick. On server join has failed!");
 
             String hostname;
@@ -71,7 +71,7 @@ public class ClientConnectionEvent {
                 fileJson.mkdirs();
             }
 
-            ProspectorJournal.hostName = hostname;
+            GT6MWGeologyMarker.hostName = hostname;
 
             Utils.readJson(Utils.GT_FILE);
             Utils.readJson(Utils.GT_BED_FILE);

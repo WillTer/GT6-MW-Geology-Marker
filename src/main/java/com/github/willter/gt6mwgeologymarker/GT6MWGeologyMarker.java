@@ -1,17 +1,18 @@
-package com.github.canisartorus.prospectorjournal;
+package com.github.willter.gt6mwgeologymarker;
 
 /**
  * @author Alexander James
  * @author Gregorious Techneticies
  * @author Dyonovan
+ * @author WillTer
  *
  *
- * Core file for the Prospector's Journal mod.
+ * Core file for the GT6MWGeologyMarker mod.
  * This keeps track of ore bearing rocks, and indicator flowers,
  * in order to make waypointing everywhere unnecessary
  * to find the large ore Veins as are present in GT6.
  *
- *  Built primarily off of TCNodeTracker at https://github.com/Dyonovan/TCNodeTracker
+ *  Built primarily off of Prospector's Journal at https://github.com/CanisArtorus/ProspectorJournal
  *  and thus remains under Creative Commons CC-BY-NC-SA4.0 (attribution, non-commercial, share-alike)
  */
 
@@ -19,35 +20,36 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.*;
 import gregapi.network.NetworkHandler;
 
-import com.github.canisartorus.prospectorjournal.lib.*;
-import com.github.canisartorus.prospectorjournal.network.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@cpw.mods.fml.common.Mod(modid = ProspectorJournal.MOD_ID, name = ProspectorJournal.MOD_NAME, version = ProspectorJournal.VERSION, dependencies = "required-after:gregapi_post; required-after:gregtech")
-public final class ProspectorJournal extends gregapi.api.Abstract_Mod {
+import com.github.willter.gt6mwgeologymarker.lib.*;
+import com.github.willter.gt6mwgeologymarker.network.*;
+
+@cpw.mods.fml.common.Mod(modid = GT6MWGeologyMarker.MOD_ID, name = GT6MWGeologyMarker.MOD_NAME, version = GT6MWGeologyMarker.VERSION, dependencies = "required-after:gregapi_post; required-after:gregtech; required-after:mapwriter")
+public final class GT6MWGeologyMarker extends gregapi.api.Abstract_Mod {
 	/**
 	 * Your Mod-ID has to be LOWERCASE and without Spaces. Uppercase Chars and
 	 * Spaces can create problems with Resource Packs. This is a vanilla forge
 	 * "Issue".
 	 */
-	public static final String MOD_ID = "prospectorjournal";
+	public static final String MOD_ID = "gt6mwgeologymarker";
 	/** This is your Mods Name */
-	public static final String MOD_NAME = "ProspectorJournal";
+	public static final String MOD_NAME = "GT6MWGeologyMarker";
 	/** This is your Mods Version */
-	public static final String VERSION = "ProspectorJournal-MC1710-0.12.2";
+	public static final String VERSION = "0.1.0";
 	/** Contains a ModData Object for ID and Name. Doesn't have to be changed. */
 	public static gregapi.code.ModData MOD_DATA = new gregapi.code.ModData(MOD_ID, MOD_NAME);
 
-	@cpw.mods.fml.common.SidedProxy(modId = MOD_ID, clientSide = "com.github.canisartorus.prospectorjournal.ProxyClient", serverSide = "com.github.canisartorus.prospectorjournal.ProxyServer")
+	@cpw.mods.fml.common.SidedProxy(modId = MOD_ID, clientSide = "com.github.willter.gt6mwgeologymarker.ProxyClient", serverSide = "com.github.willter.gt6mwgeologymarker.ProxyServer")
 	public static ProxyServer PROXY;
 
 	/*
 	 * @cpw.mods.fml.common.Mod.Instance(MOD_ID)
-	 * public static ProspectorJournal instance;
+	 * public static GT6MWGeologyMarker instance;
 	 */
 
-	public static String hostName = "ProspectorJournal";
+	public static String hostName = "GT6MWGeologyMarker";
 	public static boolean doGui = false;
 	public static int xMarker, yMarker, zMarker;
 	public static List<GeoTag> rockSurvey = new ArrayList<>();
@@ -65,7 +67,7 @@ public final class ProspectorJournal extends gregapi.api.Abstract_Mod {
 
 	@Override
 	public String getModNameForLog() {
-		return "Prospector_Journal";
+		return "GT6-MW Geology Marker";
 	}
 
 	@Override

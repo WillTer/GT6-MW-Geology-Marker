@@ -1,9 +1,8 @@
-package com.github.canisartorus.prospectorjournal;
+package com.github.willter.gt6mwgeologymarker;
 
-import com.github.canisartorus.prospectorjournal.lib.GeoTag;
-import com.github.canisartorus.prospectorjournal.lib.MineralMine;
-import com.github.canisartorus.prospectorjournal.lib.Utils;
-import com.github.canisartorus.prospectorjournal.network.PacketOreSurvey;
+import com.github.willter.gt6mwgeologymarker.lib.GeoTag;
+import com.github.willter.gt6mwgeologymarker.lib.Utils;
+import com.github.willter.gt6mwgeologymarker.network.PacketOreSurvey;
 
 import gregapi.block.metatype.BlockStones;
 import gregapi.item.multiitem.MultiItem;
@@ -113,7 +112,8 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 					default:
 						if (ConfigHandler.debug && aPlayer.isClientWorld()) {
 							aPlayer.addChatMessage(new net.minecraft.util.ChatComponentText(
-									"[ProspectorJournal] Found unregistered ore with block metadata " + metadata));
+									GT6MWGeologyMarker.MOD_NAME
+											+ ": Found unregistered ore with block metadata " + metadata));
 						}
 						break;
 				}
@@ -147,7 +147,8 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 					default:
 						if (ConfigHandler.debug && aPlayer.isClientWorld()) {
 							aPlayer.addChatMessage(new net.minecraft.util.ChatComponentText(
-									"[ProspectorJournal] Found unregistered ore with block metadata " + metadata));
+									GT6MWGeologyMarker.MOD_NAME + ": Found unregistered ore with block metadata "
+											+ metadata));
 						}
 						break;
 				}
@@ -205,7 +206,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 			final EntityPlayer aPlayer) {
 		final int dim = aWorld.provider.dimensionId;
 		if (ConfigHandler.debug) {
-			System.out.println(ProspectorJournal.MOD_NAME + "[Info] Sampling " + meta + " at " + x + "," + y + "," + z
+			System.out.println(GT6MWGeologyMarker.MOD_NAME + "[Info] Sampling " + meta + " at " + x + "," + y + "," + z
 					+ " on world " + dim);
 		}
 
@@ -213,8 +214,8 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 		final int chunkZ = z / 16;
 		if (sourceType == Utils.FLOWER_ORE_MARKER || sourceType == Utils.BEDROCK_ORE_VEIN) {
 			boolean match = false;
-			if (ProspectorJournal.bedrockFault.size() != 0) {
-				for (GeoTag tag : ProspectorJournal.bedrockFault) {
+			if (GT6MWGeologyMarker.bedrockFault.size() != 0) {
+				for (GeoTag tag : GT6MWGeologyMarker.bedrockFault) {
 					if (dim == tag.dim && meta == tag.ore) {
 						// include adjacent chunks as same unit.
 						// generates a 32 pattern of indicators, and a 6 spread of ores.
@@ -234,7 +235,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 							}
 						}
 						if (tSpecify && tag.IsInNChunksFrom(ConfigHandler.veinDistance, chunkX, chunkZ)) {
-							ProspectorJournal.bedrockFault.remove(tag);
+							GT6MWGeologyMarker.bedrockFault.remove(tag);
 							match = false;
 							continue;
 						}
@@ -258,7 +259,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 			}
 			if (!match) {
 				// make a new entry
-				ProspectorJournal.bedrockFault
+				GT6MWGeologyMarker.bedrockFault
 						.add(new GeoTag(meta, dim, chunkX, chunkZ,
 								sourceType == Utils.BEDROCK_ORE_VEIN ? false : true));
 				Utils.writeJson(Utils.GT_BED_FILE);
@@ -270,8 +271,8 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 		}
 
 		// ignore non-specific rocks and empty ores
-		if (ProspectorJournal.rockSurvey.size() != 0) {
-			for (GeoTag rock : ProspectorJournal.rockSurvey) {
+		if (GT6MWGeologyMarker.rockSurvey.size() != 0) {
+			for (GeoTag rock : GT6MWGeologyMarker.rockSurvey) {
 				if (meta == rock.ore && dim == rock.dim
 						&& rock.IsInNChunksFrom(ConfigHandler.veinDistance, chunkX, chunkZ)) {
 					switch (sourceType) {
@@ -298,15 +299,15 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 		final String oreName = OreDictMaterial.MATERIAL_ARRAY[meta].mNameLocal;
 		switch (sourceType) {
 			case Utils.ORE_VEIN:
-				ProspectorJournal.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, false));
+				GT6MWGeologyMarker.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, false));
 				Utils.createMapMarker(x, y, z, dim, oreName, "Ore Veins", aPlayer);
 				break;
 			case Utils.STONE_LAYER:
-				ProspectorJournal.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, false));
+				GT6MWGeologyMarker.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, false));
 				Utils.createMapMarker(x, y, z, dim, oreName, "Stone Layers", aPlayer);
 				break;
 			default:
-				ProspectorJournal.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, true));
+				GT6MWGeologyMarker.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, true));
 				Utils.createMapMarker(x, y, z, dim, oreName, "Bedrock Ore Veins", aPlayer);
 				break;
 		}

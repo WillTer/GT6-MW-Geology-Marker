@@ -1,4 +1,4 @@
-package com.github.canisartorus.prospectorjournal.lib;
+package com.github.willter.gt6mwgeologymarker.lib;
 
 public class GeoTag extends MineralMine {
 	public boolean sample = true;

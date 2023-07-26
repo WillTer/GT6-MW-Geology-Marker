@@ -1,6 +1,6 @@
-package com.github.canisartorus.prospectorjournal.network;
+package com.github.willter.gt6mwgeologymarker.network;
 
-import com.github.canisartorus.prospectorjournal.ProspectorJournal;
+import com.github.willter.gt6mwgeologymarker.GT6MWGeologyMarker;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 
@@ -29,12 +29,12 @@ public class PacketOreSurvey extends PacketCoordinates implements IPacket {
 	@cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
 	public void process(IBlockAccess aWorld, INetworkHandler aNetworkHandler) {
 		try {
-			com.github.canisartorus.prospectorjournal.JournalBehaviour.TakeSample((net.minecraft.world.World) aWorld,
+			com.github.willter.gt6mwgeologymarker.JournalBehaviour.TakeSample((net.minecraft.world.World) aWorld,
 					mX, mY, mZ, meta, type, net.minecraft.client.Minecraft.getMinecraft().thePlayer);
 		} catch (Exception e) {
-			System.out.println(ProspectorJournal.MOD_NAME + "[WARNING] : Packet processing failure " + e.toString());
+			System.out.println(GT6MWGeologyMarker.MOD_NAME + "[WARNING] : Packet processing failure " + e.toString());
 			EntityPlayer localPC = net.minecraft.client.Minecraft.getMinecraft().thePlayer;
-			com.github.canisartorus.prospectorjournal.JournalBehaviour.TakeSample(localPC.getEntityWorld(), mX, mY, mZ,
+			com.github.willter.gt6mwgeologymarker.JournalBehaviour.TakeSample(localPC.getEntityWorld(), mX, mY, mZ,
 					meta, type, localPC);
 		}
 

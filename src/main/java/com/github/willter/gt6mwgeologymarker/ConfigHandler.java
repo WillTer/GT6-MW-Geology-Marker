@@ -1,4 +1,4 @@
-package com.github.canisartorus.prospectorjournal;
+package com.github.willter.gt6mwgeologymarker;
 
 // @author Alexander James 2019-03-24
 

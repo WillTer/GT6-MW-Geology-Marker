@@ -1,16 +1,15 @@
-package com.github.canisartorus.prospectorjournal.lib;
+package com.github.willter.gt6mwgeologymarker.lib;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import com.github.willter.gt6mwgeologymarker.GT6MWGeologyMarker;
+import com.github.willter.gt6mwgeologymarker.network.ChatPacket;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
-import com.github.canisartorus.prospectorjournal.ProspectorJournal;
-import com.github.canisartorus.prospectorjournal.network.ChatPacket;
 
 import mapwriter.Mw;
 import mapwriter.map.MarkerManager;
@@ -37,32 +36,32 @@ public class Utils {
 		String json = null;
 		switch (name) {
 			case GT_FILE:
-				json = gson.toJson(ProspectorJournal.rockSurvey);
+				json = gson.toJson(GT6MWGeologyMarker.rockSurvey);
 				break;
 			case GT_BED_FILE:
-				json = gson.toJson(ProspectorJournal.bedrockFault);
+				json = gson.toJson(GT6MWGeologyMarker.bedrockFault);
 				break;
 		}
 
 		if (json == null)
 			throw new java.lang.IllegalArgumentException(
-					ProspectorJournal.MOD_ID + ": " + name + " is not a recognized data file.");
+					GT6MWGeologyMarker.MOD_ID + ": " + name + " is not a recognized data file.");
 		try {
-			if (com.github.canisartorus.prospectorjournal.ConfigHandler.debug) {
-				System.out.println("Attempting to write to " + ProspectorJournal.hostName + "/" + name);
+			if (com.github.willter.gt6mwgeologymarker.ConfigHandler.debug) {
+				System.out.println("Attempting to write to " + GT6MWGeologyMarker.hostName + "/" + name);
 			}
-			FileWriter fw = new FileWriter(ProspectorJournal.hostName + "/" + name);
+			FileWriter fw = new FileWriter(GT6MWGeologyMarker.hostName + "/" + name);
 			fw.write(json);
 			fw.close();
 		} catch (IOException e) {
-			System.out.println(ProspectorJournal.MOD_ID + ": Could not write to " + name + "!");
+			System.out.println(GT6MWGeologyMarker.MOD_ID + ": Could not write to " + name + "!");
 		}
 	}
 
 	public static void createMapMarker(int x, int y, int z, int dimension, String oreName, String markerGroup,
 			final EntityPlayer aPlayer) {
 		if (Mw.instance == null) {
-			System.out.println(ProspectorJournal.MOD_ID + ": Could not get instance of MapWriter!");
+			System.out.println(GT6MWGeologyMarker.MOD_ID + ": Could not get instance of MapWriter!");
 			return;
 		}
 
@@ -76,21 +75,21 @@ public class Utils {
 
 	public static void readJson(String name) {
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(ProspectorJournal.hostName + "/" + name));
+			BufferedReader br = new BufferedReader(new FileReader(GT6MWGeologyMarker.hostName + "/" + name));
 			Gson gson = new Gson();
 			switch (name) {
 				case GT_FILE:
-					ProspectorJournal.rockSurvey = gson.fromJson(br, new TypeToken<java.util.List<GeoTag>>() {
+					GT6MWGeologyMarker.rockSurvey = gson.fromJson(br, new TypeToken<java.util.List<GeoTag>>() {
 					}.getType());
 					break;
 				case GT_BED_FILE:
-					ProspectorJournal.bedrockFault = gson.fromJson(br, new TypeToken<java.util.List<GeoTag>>() {
+					GT6MWGeologyMarker.bedrockFault = gson.fromJson(br, new TypeToken<java.util.List<GeoTag>>() {
 					}.getType());
 					break;
 			}
 			br.close();
 		} catch (IOException e) {
-			System.out.println(ProspectorJournal.MOD_ID + ": No " + name + " file found.");
+			System.out.println(GT6MWGeologyMarker.MOD_ID + ": No " + name + " file found.");
 		}
 	}
 

@@ -1,16 +1,17 @@
 [
 {
-  "modid": "prospectorjournal",
-  "name": "Prospector's Journal",
+  "modid": "${modId}",
+  "name": "${modName}",
   "description": "Helps to track large ore veins.",
   "version": "${modVersion}",
   "mcversion": "${minecraftVersion}",
   "url": "",
-  "updateUrl": "",
-  "authorList": ["CanisArtorus"],
-  "credits": "Dyonovan, for TCNodeTracker doing basically the same thing. GregoriousT for GregTech6 in which this matters. OvermindDL1 for providing a gradle workspace that works.",
-  "logoFile": "",
-  "screenshots": [],
-  "dependencies": ["gregtech@[6.14.15,)"]
+  "authorList": ["WillTer"],
+  "credits": "CanisArtorus for creating cool Prospector's Journal. IIA developers for enhancing and updating MapWriter. GregoriousT for GregTech6 in which this matters. OvermindDL1 for providing a gradle workspace that works.",
+  "dependencies": [
+    "gregtech6",
+    "MapWriter"
+  ],
+  "useDependencyInformation": true
 }
 ]
