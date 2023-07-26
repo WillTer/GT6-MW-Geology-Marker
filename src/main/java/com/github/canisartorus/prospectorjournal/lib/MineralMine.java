@@ -4,20 +4,16 @@ package com.github.canisartorus.prospectorjournal.lib;
 
 public abstract class MineralMine {
 	public final short dim;
-	public int x, z;
+	public int cx, cz;
 	public boolean dead = false;
 
-	public int cx() {
-		return x / 16;
-	}
-
-	public int cz() {
-		return z / 16;
-	}
-
-	public MineralMine(short dim, int x, int z) {
+	public MineralMine(short dim, int cx, int cz) {
 		this.dim = dim;
-		this.x = x;
-		this.z = z;
+		this.cx = cx;
+		this.cz = cz;
+	}
+
+	public boolean IsInNChunksFrom(int n, int chunkX, int chunkZ) {
+		return Math.abs(cx - chunkX) <= n && Math.abs(cz - chunkZ) <= n;
 	}
 }

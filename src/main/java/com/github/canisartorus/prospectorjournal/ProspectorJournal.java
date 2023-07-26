@@ -50,7 +50,7 @@ public final class ProspectorJournal extends gregapi.api.Abstract_Mod {
 	public static String hostName = "ProspectorJournal";
 	public static boolean doGui = false;
 	public static int xMarker, yMarker, zMarker;
-	public static List<RockMatter> rockSurvey = new ArrayList<>();
+	public static List<GeoTag> rockSurvey = new ArrayList<>();
 	public static List<GeoTag> bedrockFault = new ArrayList<>();
 
 	@Override

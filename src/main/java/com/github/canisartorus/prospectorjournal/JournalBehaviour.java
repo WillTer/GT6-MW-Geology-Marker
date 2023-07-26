@@ -1,7 +1,7 @@
 package com.github.canisartorus.prospectorjournal;
 
 import com.github.canisartorus.prospectorjournal.lib.GeoTag;
-import com.github.canisartorus.prospectorjournal.lib.RockMatter;
+import com.github.canisartorus.prospectorjournal.lib.MineralMine;
 import com.github.canisartorus.prospectorjournal.lib.Utils;
 import com.github.canisartorus.prospectorjournal.network.PacketOreSurvey;
 
@@ -51,17 +51,18 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 				TakeSampleServer(aWorld, x, y, z,
 						(short) ((TileEntityBase03MultiTileEntities) i).getDrops(0, false).get(0)
 								.getItemDamage(),
-						Utils.ROCK, aPlayer);
+						Utils.STONE_LAYER, aPlayer);
 			}
 		} else if (gregapi.util.OM.is(gregapi.data.OD.itemFlint, sample)) {
 			// ignore
-		} else if (!ConfigHandler.trackRock
-				&& gregapi.util.OM.materialcontains(sample, gregapi.data.TD.Properties.STONE)) {
-			// ignore
+		} else if (gregapi.util.OM.materialcontains(sample, gregapi.data.TD.Properties.STONE)) {
+			if (ConfigHandler.trackRock) {
+				TakeSampleServer(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.STONE_LAYER, aPlayer);
+			}
 		} else if (gregapi.data.OP.oreRaw.contains(sample)) {
-			TakeSampleServer(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.FLOWER, aPlayer);
+			TakeSampleServer(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.FLOWER_ORE_MARKER, aPlayer);
 		} else {
-			TakeSampleServer(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.ROCK, aPlayer);
+			TakeSampleServer(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.ORE_VEIN, aPlayer);
 		}
 		return true;
 	}
@@ -75,7 +76,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 					z, gregapi.data.CS.SIDE_INVALID);
 			final String tName = b.getUnlocalizedName();
 			if (tName.endsWith(".bedrock")) {
-				TakeSample(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.BEDROCK, aPlayer);
+				TakeSample(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.BEDROCK_ORE_VEIN, aPlayer);
 			} else if (tName.startsWith("gt.meta.ore.normal.")) {
 				TakeSample(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.ORE_VEIN, aPlayer);
 			}
@@ -151,10 +152,10 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 						break;
 				}
 			}
-			TakeSample(aWorld, x, y, z, type, Utils.FLOWER, aPlayer);
+			TakeSample(aWorld, x, y, z, type, Utils.FLOWER_ORE_MARKER, aPlayer);
 		} else if (ConfigHandler.trackRock && b instanceof BlockStones
 				&& b.getDamageValue(aWorld, x, y, z) == BlockStones.STONE) {
-			TakeSample(aWorld, x, y, z, ((BlockStones) b).mMaterial.mID, Utils.ORE_VEIN, aPlayer);
+			TakeSample(aWorld, x, y, z, ((BlockStones) b).mMaterial.mID, Utils.STONE_LAYER, aPlayer);
 		}
 		return true;
 	}
@@ -181,7 +182,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 	// @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.SERVER)
 	static void TakeSampleServer(final World aWorld, int x, int y, int z, short meta, byte sourceType,
 			final EntityPlayer aPlayer) {
-		if (sourceType == Utils.ROCK && (meta == 8649 || meta == 8757)) {
+		if (sourceType == Utils.STONE_LAYER && (meta == 8649 || meta == 8757)) {
 			// ignore meteors
 		} else {
 			Utils.NW_PJ.sendToPlayer(new PacketOreSurvey(x, y, z, meta, sourceType), (EntityPlayerMP) aPlayer);
@@ -208,27 +209,22 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 					+ " on world " + dim);
 		}
 
-		if (sourceType == Utils.FLOWER || sourceType == Utils.BEDROCK) {
+		final int chunkX = x / 16;
+		final int chunkZ = z / 16;
+		if (sourceType == Utils.FLOWER_ORE_MARKER || sourceType == Utils.BEDROCK_ORE_VEIN) {
 			boolean match = false;
 			if (ProspectorJournal.bedrockFault.size() != 0) {
 				for (GeoTag tag : ProspectorJournal.bedrockFault) {
 					if (dim == tag.dim && meta == tag.ore) {
 						// include adjacent chunks as same unit.
 						// generates a 32 pattern of indicators, and a 6 spread of ores.
-						if (tag.x >= x - 32 && tag.x <= x + 32 && tag.z >= z - 32 && tag.z <= z + 32) {
+						if (tag.IsInNChunksFrom(ConfigHandler.veinDistance, chunkX, chunkZ)) {
 							match = true;
-							if (sourceType == Utils.BEDROCK) {
-								tag.x = x;
-								tag.z = z;
-								tag.sample = false;
-								tag.dead = false;
-								Utils.writeJson(Utils.GT_BED_FILE);
-							}
 							break;
 						}
 					} else if (tag.dim == dim && tag.ore == 0) {
 						// find a vein under non-specific flowers
-						boolean tSpecify = (sourceType == Utils.BEDROCK);
+						boolean tSpecify = (sourceType == Utils.BEDROCK_ORE_VEIN);
 						// allow the confusing Sphalerite / Smithsonite flower to be specified by the
 						// raw ore chunk
 						// and the various tungsten ores too
@@ -237,13 +233,13 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 								tSpecify = true;
 							}
 						}
-						if (tSpecify && tag.x >= x - 40 && tag.x <= x + 40 && tag.z >= z - 40 && tag.z <= z + 40) {
+						if (tSpecify && tag.IsInNChunksFrom(ConfigHandler.veinDistance, chunkX, chunkZ)) {
 							ProspectorJournal.bedrockFault.remove(tag);
 							match = false;
 							continue;
 						}
 					} else if (tag.dim == dim && meta == 0) {
-						if (tag.x >= x - 40 && tag.x <= x + 40 && tag.z >= z - 40 && tag.z <= z + 40) {
+						if (tag.IsInNChunksFrom(ConfigHandler.veinDistance, chunkX, chunkZ)) {
 							if (!tag.sample) {
 								match = true;
 								break;
@@ -263,7 +259,8 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 			if (!match) {
 				// make a new entry
 				ProspectorJournal.bedrockFault
-						.add(new GeoTag(meta, dim, x, z, sourceType == Utils.BEDROCK ? false : true));
+						.add(new GeoTag(meta, dim, chunkX, chunkZ,
+								sourceType == Utils.BEDROCK_ORE_VEIN ? false : true));
 				Utils.writeJson(Utils.GT_BED_FILE);
 			}
 		}
@@ -274,53 +271,25 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 
 		// ignore non-specific rocks and empty ores
 		if (ProspectorJournal.rockSurvey.size() != 0) {
-			final int chunkX = x / 16;
-			final int chunkZ = z / 16;
-			for (RockMatter rock : ProspectorJournal.rockSurvey) {
-				if (meta == rock.ore && dim == rock.dim && chunkX >= rock.cx() - 1 && chunkX <= rock.cx() + 1
-						&& chunkZ >= rock.cz() - 1 && chunkZ <= rock.cz() + 1) {
+			for (GeoTag rock : ProspectorJournal.rockSurvey) {
+				if (meta == rock.ore && dim == rock.dim
+						&& rock.IsInNChunksFrom(ConfigHandler.veinDistance, chunkX, chunkZ)) {
 					switch (sourceType) {
 						case Utils.ORE_VEIN:
-							if (rock.sample) {
-								if (rock.y > y) {
-									rock.sample = false;
-									if (rock.dead) {
-										rock.dead = false;
-									}
-									rock.y = (short) y;
-								} else {
-									continue;
-								}
-							} else {
+							if (!rock.sample) {
 								rock.dead = false;
+								Utils.writeJson(Utils.GT_FILE);
+								return;
 							}
 							break;
-						case Utils.ROCK: // result of server-side message only
-							if (rock.sample) {
-								if (rock.y > y) {
-									rock.y = (short) y;
-								}
-							} else {
-								if (rock.y > y) {
-									continue;
-								}
+						case Utils.STONE_LAYER: // result of server-side message only
+							if (!rock.sample) {
 								return;
 							}
 							break;
 						default:
-							if (rock.sample) {
-								return;
-							}
-							if (rock.y > (short) 10) {
-								continue;
-							}
 							return;
 					}
-					// Editing an existing vein
-					rock.x = x;
-					rock.z = z;
-					Utils.writeJson(Utils.GT_FILE);
-					return;
 				}
 			}
 		}
@@ -329,16 +298,16 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 		final String oreName = OreDictMaterial.MATERIAL_ARRAY[meta].mNameLocal;
 		switch (sourceType) {
 			case Utils.ORE_VEIN:
-				ProspectorJournal.rockSurvey.add(new RockMatter(meta, dim, x, y, z, false));
-				Utils.createMapMarker(x, y, z, dim, oreName, aPlayer);
+				ProspectorJournal.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, false));
+				Utils.createMapMarker(x, y, z, dim, oreName, "Ore Veins", aPlayer);
 				break;
-			case Utils.ROCK:
-				ProspectorJournal.rockSurvey.add(new RockMatter(meta, dim, x, y, z, true));
-				Utils.createMapMarker(x, y, z, dim, oreName, aPlayer);
+			case Utils.STONE_LAYER:
+				ProspectorJournal.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, false));
+				Utils.createMapMarker(x, y, z, dim, oreName, "Stone Layers", aPlayer);
 				break;
 			default:
-				ProspectorJournal.rockSurvey.add(new RockMatter(meta, dim, x, 10, z, true));
-				Utils.createMapMarker(x, 10, z, dim, oreName, aPlayer);
+				ProspectorJournal.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, true));
+				Utils.createMapMarker(x, y, z, dim, oreName, "Bedrock Ore Veins", aPlayer);
 				break;
 		}
 		Utils.writeJson(Utils.GT_FILE);

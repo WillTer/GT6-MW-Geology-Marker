@@ -28,17 +28,14 @@ public class PacketOreSurvey extends PacketCoordinates implements IPacket {
 	@Override
 	@cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
 	public void process(IBlockAccess aWorld, INetworkHandler aNetworkHandler) {
-//		if(null == aWorld) {
-//			//Server-side
-//			return;
-//		}
 		try {
-//			if(com.github.canisartorus.prospectorjournal.ConfigHandler.debug) System.out.println(ProspectorJournal.MOD_ID +"[INFO] : Client recieved sample of material " + meta + ".");
-			com.github.canisartorus.prospectorjournal.JournalBehaviour.TakeSample((net.minecraft.world.World)aWorld, mX, mY, mZ, meta, type, net.minecraft.client.Minecraft.getMinecraft().thePlayer);
+			com.github.canisartorus.prospectorjournal.JournalBehaviour.TakeSample((net.minecraft.world.World) aWorld,
+					mX, mY, mZ, meta, type, net.minecraft.client.Minecraft.getMinecraft().thePlayer);
 		} catch (Exception e) {
-			System.out.println(ProspectorJournal.MOD_NAME + "[WARNING] : Packet processing failure "+e.toString());
+			System.out.println(ProspectorJournal.MOD_NAME + "[WARNING] : Packet processing failure " + e.toString());
 			EntityPlayer localPC = net.minecraft.client.Minecraft.getMinecraft().thePlayer;
-			com.github.canisartorus.prospectorjournal.JournalBehaviour.TakeSample(localPC.getEntityWorld(), mX, mY, mZ, meta, type, localPC);
+			com.github.canisartorus.prospectorjournal.JournalBehaviour.TakeSample(localPC.getEntityWorld(), mX, mY, mZ,
+					meta, type, localPC);
 		}
 
 	}

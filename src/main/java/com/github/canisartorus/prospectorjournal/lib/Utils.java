@@ -24,7 +24,7 @@ public class Utils {
 
 	public final static String GT_FILE = "GT6OreVeins.json",
 			GT_BED_FILE = "GT6BedrockSpots.json";
-	public final static byte ROCK = 0, FLOWER = 1, ORE_VEIN = 2, BEDROCK = 3;
+	public final static byte STONE_LAYER = 0, FLOWER_ORE_MARKER = 1, ORE_VEIN = 2, BEDROCK_ORE_VEIN = 3;
 
 	public final static java.util.regex.Pattern patternInvalidChars = java.util.regex.Pattern.compile("[^a-zA-Z0-9_ ]");
 
@@ -59,14 +59,13 @@ public class Utils {
 		}
 	}
 
-	public static void createMapMarker(int x, int y, int z, int dimension, String oreName,
+	public static void createMapMarker(int x, int y, int z, int dimension, String oreName, String markerGroup,
 			final EntityPlayer aPlayer) {
 		if (Mw.instance == null) {
 			System.out.println(ProspectorJournal.MOD_ID + ": Could not get instance of MapWriter!");
 			return;
 		}
 
-		final String markerGroup = "Prospected Ores";
 		MarkerManager markerManager = Mw.instance.markerManager;
 		markerManager.addMarker(oreName, markerGroup, x, y, z, dimension, 0xffff0000);
 		markerManager.setVisibleGroupName(markerGroup);
@@ -81,7 +80,7 @@ public class Utils {
 			Gson gson = new Gson();
 			switch (name) {
 				case GT_FILE:
-					ProspectorJournal.rockSurvey = gson.fromJson(br, new TypeToken<java.util.List<RockMatter>>() {
+					ProspectorJournal.rockSurvey = gson.fromJson(br, new TypeToken<java.util.List<GeoTag>>() {
 					}.getType());
 					break;
 				case GT_BED_FILE:
