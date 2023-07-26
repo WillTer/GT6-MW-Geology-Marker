@@ -7,7 +7,7 @@
   "mcversion": "${minecraftVersion}",
   "url": "",
   "authorList": ["WillTer"],
-  "credits": "CanisArtorus for creating cool Prospector's Journal. IIA developers for enhancing and updating MapWriter. GregoriousT for GregTech6 in which this matters. OvermindDL1 for providing a gradle workspace that works.",
+  "credits": "CanisArtorus for creating cool Prospector's Journal. IIA developers for enhancing and updating MapWriter. GregoriousT and OvermindDL1 for GregTech6 in which this matters. GTNH team for providing a gradle workspace that works.",
   "dependencies": [
     "gregtech6",
     "MapWriter"
