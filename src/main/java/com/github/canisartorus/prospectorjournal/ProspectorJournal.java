@@ -19,18 +19,18 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.*;
 import gregapi.network.NetworkHandler;
 
-import com.github.canisartorus.prospectorjournal.gui.AbstractMenuData;
-import com.github.canisartorus.prospectorjournal.gui.OreMenuData;
-import com.github.canisartorus.prospectorjournal.gui.BedrockMenuData;
-import com.github.canisartorus.prospectorjournal.gui.ExcavatorMenuData;
 import com.github.canisartorus.prospectorjournal.lib.*;
 import com.github.canisartorus.prospectorjournal.network.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@cpw.mods.fml.common.Mod(modid=ProspectorJournal.MOD_ID, name=ProspectorJournal.MOD_NAME, version=ProspectorJournal.VERSION, dependencies="required-after:gregapi_post; required-after:gregtech; after:ImmersiveEngineering")
+@cpw.mods.fml.common.Mod(modid = ProspectorJournal.MOD_ID, name = ProspectorJournal.MOD_NAME, version = ProspectorJournal.VERSION, dependencies = "required-after:gregapi_post; required-after:gregtech")
 public final class ProspectorJournal extends gregapi.api.Abstract_Mod {
-	/** Your Mod-ID has to be LOWERCASE and without Spaces. Uppercase Chars and Spaces can create problems with Resource Packs. This is a vanilla forge "Issue". */
+	/**
+	 * Your Mod-ID has to be LOWERCASE and without Spaces. Uppercase Chars and
+	 * Spaces can create problems with Resource Packs. This is a vanilla forge
+	 * "Issue".
+	 */
 	public static final String MOD_ID = "prospectorjournal";
 	/** This is your Mods Name */
 	public static final String MOD_NAME = "ProspectorJournal";
@@ -40,69 +40,93 @@ public final class ProspectorJournal extends gregapi.api.Abstract_Mod {
 	public static gregapi.code.ModData MOD_DATA = new gregapi.code.ModData(MOD_ID, MOD_NAME);
 
 	@cpw.mods.fml.common.SidedProxy(modId = MOD_ID, clientSide = "com.github.canisartorus.prospectorjournal.ProxyClient", serverSide = "com.github.canisartorus.prospectorjournal.ProxyServer")
-    public static ProxyServer PROXY;
+	public static ProxyServer PROXY;
 
 	/*
-	@cpw.mods.fml.common.Mod.Instance(MOD_ID)
-	public static ProspectorJournal instance;
-	*/
+	 * @cpw.mods.fml.common.Mod.Instance(MOD_ID)
+	 * public static ProspectorJournal instance;
+	 */
 
 	public static String hostName = "ProspectorJournal";
 	public static boolean doGui = false;
 	public static int xMarker, yMarker, zMarker;
-	public static List<DimTag> dims 			= new ArrayList<>();
 	public static List<RockMatter> rockSurvey = new ArrayList<>();
-	public static List<GeoTag> bedrockFault 	= new ArrayList<>();
-	public static List<VoidMine> voidVeins	= new ArrayList<>();
-	public static List<AbstractMenuData> AVAILABLE_TRACKERS	= new ArrayList<>(4);
+	public static List<GeoTag> bedrockFault = new ArrayList<>();
 
-	@Override public String getModID() {return MOD_ID;}
-	@Override public String getModName() {return MOD_NAME;}
-	@Override public String getModNameForLog() {return "Prospector_Journal";}
-	@Override public ProxyServer getProxy() {return PROXY;}
+	@Override
+	public String getModID() {
+		return MOD_ID;
+	}
+
+	@Override
+	public String getModName() {
+		return MOD_NAME;
+	}
+
+	@Override
+	public String getModNameForLog() {
+		return "Prospector_Journal";
+	}
+
+	@Override
+	public ProxyServer getProxy() {
+		return PROXY;
+	}
 
 	// Do not change these 7 Functions. Just keep them this way.
-	@EventHandler public final void onPreLoad           (FMLPreInitializationEvent    aEvent) {onModPreInit(aEvent);}
-	@EventHandler public final void onLoad              (FMLInitializationEvent       aEvent) {onModInit(aEvent);}
-	@EventHandler public final void onPostLoad          (FMLPostInitializationEvent   aEvent) {onModPostInit(aEvent);}
-	@EventHandler public final void onServerStarting    (FMLServerStartingEvent       aEvent) {onModServerStarting(aEvent);}
-	@EventHandler public final void onServerStarted     (FMLServerStartedEvent        aEvent) {onModServerStarted(aEvent);}
-	@EventHandler public final void onServerStopping    (FMLServerStoppingEvent       aEvent) {onModServerStopping(aEvent);}
-	@EventHandler public final void onServerStopped     (FMLServerStoppedEvent        aEvent) {onModServerStopped(aEvent);}
+	@EventHandler
+	public final void onPreLoad(FMLPreInitializationEvent aEvent) {
+		onModPreInit(aEvent);
+	}
+
+	@EventHandler
+	public final void onLoad(FMLInitializationEvent aEvent) {
+		onModInit(aEvent);
+	}
+
+	@EventHandler
+	public final void onPostLoad(FMLPostInitializationEvent aEvent) {
+		onModPostInit(aEvent);
+	}
+
+	@EventHandler
+	public final void onServerStarting(FMLServerStartingEvent aEvent) {
+		onModServerStarting(aEvent);
+	}
+
+	@EventHandler
+	public final void onServerStarted(FMLServerStartedEvent aEvent) {
+		onModServerStarted(aEvent);
+	}
+
+	@EventHandler
+	public final void onServerStopping(FMLServerStoppingEvent aEvent) {
+		onModServerStopping(aEvent);
+	}
+
+	@EventHandler
+	public final void onServerStopped(FMLServerStoppedEvent aEvent) {
+		onModServerStopped(aEvent);
+	}
 
 	@Override
 	public void onModPreInit2(FMLPreInitializationEvent aEvent) {
-		// Make new items, add them to OreDicts, and do recipes using only internal items.
+		// Make new items, add them to OreDicts, and do recipes using only internal
+		// items.
 		ConfigHandler.init(aEvent.getSuggestedConfigurationFile());
-
-//		new gregapi.block.multitileentity.MultiTileEntityRegistry("ca.pj.multitileentity");
-//		if(ConfigHandler.makeBook)
-			Items.RegisterItems();
 
 		Utils.NW_PJ = new NetworkHandler(MOD_ID, "CAPJ",
 				new ChatPacket(0), new ChatPacket(1), new ChatPacket(2),
-				new PacketOreSurvey(0), new PacketOreSurvey(1), new PacketOreSurvey(2), new PacketOreSurvey(3), new PacketOreSurvey(4), new PacketOreSurvey(5), new PacketOreSurvey(6), new PacketOreSurvey(7),
-				new PacketVoidVein(0), new PacketVoidVein(1), new PacketVoidVein(2), new PacketVoidVein(3));
+				new PacketOreSurvey(0), new PacketOreSurvey(1), new PacketOreSurvey(2), new PacketOreSurvey(3),
+				new PacketOreSurvey(4), new PacketOreSurvey(5), new PacketOreSurvey(6), new PacketOreSurvey(7));
 
 		net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new RightClickEvent());
-        cpw.mods.fml.common.FMLCommonHandler.instance().bus().register(new ClientConnectionEvent());
-        getProxy().registerKeybindings();
-
-        AVAILABLE_TRACKERS.add(new OreMenuData());
-        AVAILABLE_TRACKERS.add(new BedrockMenuData());
-        if (gregapi.data.MD.IE.mLoaded)
-        	AVAILABLE_TRACKERS.add(new ExcavatorMenuData());
+		cpw.mods.fml.common.FMLCommonHandler.instance().bus().register(new ClientConnectionEvent());
+		getProxy().registerKeybindings();
 	}
 
 	@Override
 	public void onModInit2(FMLInitializationEvent aEvent) {
-		// Init gets the recipes that took oredict entries, or otherwise things from other mods to build.
-		new Dwarf().run();
-
-//		if(ConfigHandler.makeBook)
-			Items.RegisterRecipes();
-		if(ConfigHandler.applyPatches)
-			com.github.canisartorus.prospectorjournal.compat.GtPatches.onInit();
 		getProxy().initKeybinds();
 	}
 

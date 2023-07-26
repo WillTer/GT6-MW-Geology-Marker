@@ -9,12 +9,11 @@ import net.minecraft.server.integrated.IntegratedServer;
 import java.io.File;
 import java.net.InetSocketAddress;
 
-import com.github.canisartorus.prospectorjournal.ProspectorJournal;
 import com.github.canisartorus.prospectorjournal.lib.Utils;
 
 public class ClientConnectionEvent {
-	public static final String PJ_FOLDER = "ProspectorJournal/";
-	private boolean CLIENT_JUST_CONNECTED = true; 
+    public static final String PJ_FOLDER = "ProspectorJournal/";
+    private boolean CLIENT_JUST_CONNECTED = true;
 
     @SubscribeEvent
     public void onConnected(FMLNetworkEvent.ClientConnectedToServerEvent event) {
@@ -23,12 +22,10 @@ public class ClientConnectionEvent {
         CLIENT_JUST_CONNECTED = false;
 
         if (!event.isLocal) {
-
             InetSocketAddress address = (InetSocketAddress) event.manager.getSocketAddress();
             hostname = address.getHostString() + "_" + address.getPort();
 
         } else {
-
             IntegratedServer server = Minecraft.getMinecraft().getIntegratedServer();
             hostname = (server != null) ? server.getFolderName() : "sp_world";
         }
@@ -38,45 +35,39 @@ public class ClientConnectionEvent {
 
         File fileJson = new File(hostname);
         if (!fileJson.exists()) {
-			System.out.println("Creating new directory "+ hostname);
+            System.out.println("Creating new directory " + hostname);
             fileJson.mkdirs();
         }
 
         ProspectorJournal.hostName = hostname;
 
-//        ProspectorJournal.rockSurvey.clear();
-//        ProspectorJournal.bedrockFault.clear();
-//		ProspectorJournal.voidVeins.clear();
-
         Utils.readJson(Utils.GT_FILE);
         Utils.readJson(Utils.GT_BED_FILE);
-		Utils.readJson(Utils.IE_VOID_FILE);
-		if ( ! ProspectorJournal.voidVeins.isEmpty() && ! gregapi.data.MD.IE.mLoaded)
-			ProspectorJournal.AVAILABLE_TRACKERS.add(new com.github.canisartorus.prospectorjournal.gui.ExcavatorMenuData());
-
     }
-    
+
     @SubscribeEvent
     @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
     public void onPlayerTickEventClient(cpw.mods.fml.common.gameevent.TickEvent.PlayerTickEvent aEvent) {
-    	if(CLIENT_JUST_CONNECTED && aEvent.phase == Phase.END && aEvent.side.isClient() ) {
-    		CLIENT_JUST_CONNECTED = false;
-    		System.out.println(ProspectorJournal.MOD_NAME+"!!Warning!! Initializing on Client Player Tick. On server join has failed!");
+        if (CLIENT_JUST_CONNECTED && aEvent.phase == Phase.END && aEvent.side.isClient()) {
+            CLIENT_JUST_CONNECTED = false;
+            System.out.println(ProspectorJournal.MOD_NAME
+                    + "!!Warning!! Initializing on Client Player Tick. On server join has failed!");
 
-    		String hostname;
-    		if(Minecraft.getMinecraft().isIntegratedServerRunning()) {
+            String hostname;
+            if (Minecraft.getMinecraft().isIntegratedServerRunning()) {
                 IntegratedServer server = Minecraft.getMinecraft().getIntegratedServer();
                 hostname = (server != null) ? server.getFolderName() : "sp_world";
             } else {
-    			hostname = (Minecraft.getMinecraft().func_147104_D().serverName +"_"+ Minecraft.getMinecraft().func_147104_D().serverIP);
-    		}
-    		
+                hostname = (Minecraft.getMinecraft().func_147104_D().serverName + "_"
+                        + Minecraft.getMinecraft().func_147104_D().serverIP);
+            }
+
             hostname = Utils.invalidChars(hostname);
             hostname = PJ_FOLDER + hostname;
 
             File fileJson = new File(hostname);
             if (!fileJson.exists()) {
-    			System.out.println("Creating new directory "+ hostname);
+                System.out.println("Creating new directory " + hostname);
                 fileJson.mkdirs();
             }
 
@@ -84,13 +75,7 @@ public class ClientConnectionEvent {
 
             Utils.readJson(Utils.GT_FILE);
             Utils.readJson(Utils.GT_BED_FILE);
-    		// Utils.readJson(Utils.IE_VOID_FILE);
-    		// if ( ! ProspectorJournal.voidVeins.isEmpty() && ! gregapi.data.MD.IE.mLoaded)
-    			// ProspectorJournal.AVAILABLE_TRACKERS.add(new com.github.canisartorus.prospectorjournal.gui.ExcavatorMenuData());
-			if(gregapi.data.MD.IE.mLoaded){
-				Utils.readJson(Utils.IE_VOID_FILE);
-			}
-    	}
+        }
     }
 
 }
