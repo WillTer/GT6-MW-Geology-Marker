@@ -51,7 +51,7 @@ public class Utils {
 	}
 
 	public static void debugLog(String message) {
-		if (ConfigHandler.debug) {
+		if (ConfigHandler.useDebugLogs) {
 			System.out.println(GT6MWGeologyMarker.MOD_NAME + ": " + message);
 		}
 	}

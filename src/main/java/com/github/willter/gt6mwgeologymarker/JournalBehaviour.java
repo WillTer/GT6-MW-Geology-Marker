@@ -48,7 +48,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 		final ItemStack sample = ((gregtech.tileentity.placeables.MultiTileEntityRock) i).mRock; // XXX GT
 		if (sample == null) {
 			// is default rock.
-			if (ConfigHandler.trackRock) {
+			if (ConfigHandler.trackStoneRocks) {
 				TakeSampleServer(aWorld, x, y, z,
 						(short) ((TileEntityBase03MultiTileEntities) i).getDrops(0, false).get(0)
 								.getItemDamage(),
@@ -57,7 +57,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 		} else if (gregapi.util.OM.is(gregapi.data.OD.itemFlint, sample)) {
 			// ignore
 		} else if (gregapi.util.OM.materialcontains(sample, gregapi.data.TD.Properties.STONE)) {
-			if (ConfigHandler.trackRock) {
+			if (ConfigHandler.trackStoneRocks) {
 				TakeSampleServer(aWorld, x, y, z, (short) sample.getItemDamage(), Utils.STONE_LAYER, aPlayer);
 			}
 		} else if (gregapi.data.OP.oreRaw.contains(sample)) {
@@ -148,7 +148,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 				}
 			}
 			TakeSample(aWorld, x, y, z, type, Utils.FLOWER_ORE_MARKER, aPlayer);
-		} else if (ConfigHandler.trackRock && b instanceof BlockStones
+		} else if (ConfigHandler.trackStoneRocks && b instanceof BlockStones
 				&& b.getDamageValue(aWorld, x, y, z) == BlockStones.STONE) {
 			TakeSample(aWorld, x, y, z, ((BlockStones) b).mMaterial.mID, Utils.STONE_LAYER, aPlayer);
 		}
@@ -204,11 +204,17 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 
 		final String oreName = meta == 0 ? "" : OreDictMaterial.MATERIAL_ARRAY[meta].mNameLocal;
 		if (sourceType == Utils.STONE_LAYER) {
+			boolean found = false;
 			for (String stoneName : ConfigHandler.stoneBlacklist) {
 				if (stoneName.equals(oreName)) {
-					Utils.debugLog("Blacklisted stone found: " + oreName);
-					return; // blacklisted
+					found = true;
+					break;
 				}
+			}
+
+			if (found != ConfigHandler.stoneBlacklistInverted) {
+				Utils.debugLog("Blacklisted stone found: " + oreName);
+				return; // blacklisted
 			}
 		}
 

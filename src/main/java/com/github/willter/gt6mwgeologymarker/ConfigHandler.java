@@ -10,8 +10,9 @@ public class ConfigHandler {
 
 	public static Configuration tMainConfig;
 
-	public static boolean trackRock;
-	public static boolean debug;
+	public static boolean trackStoneRocks;
+	public static boolean useDebugLogs;
+	public static boolean stoneBlacklistInverted;
 
 	public static int veinDistance;
 
@@ -23,13 +24,16 @@ public class ConfigHandler {
 		}
 		tMainConfig.load();
 
-		ConfigHandler.trackRock = tMainConfig.getBoolean("trackStoneRocks_false", GENERAL, false,
+		ConfigHandler.trackStoneRocks = tMainConfig.getBoolean("trackStoneRocks_false", GENERAL, false,
 				"Should indicator rocks for stone layer types be tracked? Normally non-ore rock data is discarded.");
 
-		ConfigHandler.debug = tMainConfig.getBoolean("useDebugLogs_false", GENERAL, false, "");
+		ConfigHandler.useDebugLogs = tMainConfig.getBoolean("useDebugLogs_false", GENERAL, false, "");
 
 		ConfigHandler.veinDistance = tMainConfig.getInt("veinDistance_2", GENERAL, 2, 0, Int.MaxValue(),
 				"Distance in chunks between samples of the same ore that will be counts as different veins");
+
+		ConfigHandler.stoneBlacklistInverted = tMainConfig.getBoolean("stoneBlacklistInverted_false", GENERAL, false,
+				"If true, stoneBlackList works as Whitelist");
 
 		ConfigHandler.stoneBlacklist = tMainConfig.getStringList("stoneBlackList", GENERAL,
 				new String[] {},
