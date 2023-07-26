@@ -45,3 +45,6 @@
 !/src/main/resources/**/*.mcmeta
 # Some old scripts in resources...
 /bin/
+
+# Local dependencies
+!/libs/*
