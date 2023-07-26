@@ -110,11 +110,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 					case 7: // generic Orechid
 						break;
 					default:
-						if (ConfigHandler.debug && aPlayer.isClientWorld()) {
-							aPlayer.addChatMessage(new net.minecraft.util.ChatComponentText(
-									GT6MWGeologyMarker.MOD_NAME
-											+ ": Found unregistered ore with block metadata " + metadata));
-						}
+						Utils.debugLog("Found unregistered ore with block metadata " + metadata);
 						break;
 				}
 			} else if (b.getUnlocalizedName().equalsIgnoreCase("gt.block.flower.b")) {
@@ -145,11 +141,7 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 						type = 0; // any of 9133, 9194, 9217, 9193, 9128, 9195, 9196, 9197
 						break;
 					default:
-						if (ConfigHandler.debug && aPlayer.isClientWorld()) {
-							aPlayer.addChatMessage(new net.minecraft.util.ChatComponentText(
-									GT6MWGeologyMarker.MOD_NAME + ": Found unregistered ore with block metadata "
-											+ metadata));
-						}
+						Utils.debugLog("Found unregistered ore with block metadata " + metadata);
 						break;
 				}
 			}
@@ -205,9 +197,17 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 	public static void TakeSample(final World aWorld, int x, int y, int z, short meta, byte sourceType,
 			final EntityPlayer aPlayer) {
 		final int dim = aWorld.provider.dimensionId;
-		if (ConfigHandler.debug) {
-			System.out.println(GT6MWGeologyMarker.MOD_NAME + "[Info] Sampling " + meta + " at " + x + "," + y + "," + z
-					+ " on world " + dim);
+		Utils.debugLog("Sampling " + meta + " at " + x + "," + y + "," + z
+				+ " on world " + dim);
+
+		final String oreName = OreDictMaterial.MATERIAL_ARRAY[meta].mNameLocal;
+		if (sourceType == Utils.STONE_LAYER) {
+			for (String stoneName : ConfigHandler.stoneBlacklist) {
+				if (stoneName == oreName) {
+					Utils.debugLog("Blacklisted stone found: " + oreName);
+					return; // blacklisted
+				}
+			}
 		}
 
 		final int chunkX = x / 16;
@@ -296,7 +296,6 @@ public class JournalBehaviour extends gregapi.item.multiitem.behaviors.IBehavior
 		}
 
 		// Found traces of a new vein
-		final String oreName = OreDictMaterial.MATERIAL_ARRAY[meta].mNameLocal;
 		switch (sourceType) {
 			case Utils.ORE_VEIN:
 				GT6MWGeologyMarker.rockSurvey.add(new GeoTag(meta, dim, chunkX, chunkZ, false));

@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import com.github.willter.gt6mwgeologymarker.ConfigHandler;
 import com.github.willter.gt6mwgeologymarker.GT6MWGeologyMarker;
 import com.github.willter.gt6mwgeologymarker.network.ChatPacket;
 import com.google.gson.Gson;
@@ -47,9 +48,7 @@ public class Utils {
 			throw new java.lang.IllegalArgumentException(
 					GT6MWGeologyMarker.MOD_ID + ": " + name + " is not a recognized data file.");
 		try {
-			if (com.github.willter.gt6mwgeologymarker.ConfigHandler.debug) {
-				System.out.println("Attempting to write to " + GT6MWGeologyMarker.hostName + "/" + name);
-			}
+			Utils.debugLog("Attempting to write to " + GT6MWGeologyMarker.hostName + "/" + name);
 			FileWriter fw = new FileWriter(GT6MWGeologyMarker.hostName + "/" + name);
 			fw.write(json);
 			fw.close();
@@ -100,6 +99,12 @@ public class Utils {
 			aPlayer.addChatMessage(chaty);
 		} else {
 			Utils.NW_PJ.sendToPlayer(new ChatPacket(chatString), (EntityPlayerMP) aPlayer);
+		}
+	}
+
+	public static void debugLog(String message) {
+		if (ConfigHandler.debug) {
+			System.out.println(GT6MWGeologyMarker.MOD_NAME + ": " + message);
 		}
 	}
 
